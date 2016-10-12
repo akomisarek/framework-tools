@@ -1,4 +1,4 @@
-package tooling.command.shell;
+package framework.tools.command;
 
 /**
  * Implement this interface to have the reflection utils pick
@@ -6,5 +6,7 @@ package tooling.command.shell;
  * to setup a CMD command.
  */
 public interface ShellCommand {
+
+    void run(String[] args);
 
 }

@@ -1,9 +1,7 @@
-package tooling.command.shell;
+package framework.tools.command;
 
 import com.beust.jcommander.JCommander;
 
-import org.jboss.weld.environment.se.StartMain;
-import org.jboss.weld.environment.se.WeldContainer;
 import org.reflections.Reflections;
 
 import java.util.Set;
@@ -19,14 +17,10 @@ class Main {
 
         final JCommander commander = new JCommander();
         subTypes.stream().forEach(commandClass -> toCommand(commander, commandClass));
-
         commander.parse(args);
         final String parsedCommand = commander.getParsedCommand();
-
-        StartMain startMain = new StartMain(args);
-        final WeldContainer container = startMain.go();
-
-        container.event().fire(commander.getCommands().get(parsedCommand).getObjects().get(0));
+        final ShellCommand executedCommand = (ShellCommand) commander.getCommands().get(parsedCommand).getObjects().get(0);
+        executedCommand.run(args);
     }
 
     private static void toCommand(JCommander commander, Class<? extends ShellCommand> aClass) {
@@ -41,3 +35,4 @@ class Main {
         }
     }
 }
+///Library/Java/JavaVirtualMachines/jdk1.8.0_92.jdk/Contents/Home/lib/tools.jar!/com/sun/jdi/request/EventRequest.class
