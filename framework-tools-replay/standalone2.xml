@@ -1,0 +1,236 @@
+<?xml version="1.0" ?>
+
+<server xmlns="urn:jboss:domain:4.0">
+    <extensions>
+        <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.ee"/>
+        <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jdr"/>
+        <extension module="org.jboss.as.jmx"/>
+        <extension module="org.jboss.as.jpa"/>
+        <extension module="org.jboss.as.jsf"/>
+        <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.mail"/>
+        <extension module="org.jboss.as.pojo"/>
+        <extension module="org.jboss.as.remoting"/>
+        <extension module="org.jboss.as.sar"/>
+        <extension module="org.jboss.as.security"/>
+        <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.webservices"/>
+        <extension module="org.jboss.as.weld"/>
+        <extension module="org.wildfly.extension.bean-validation"/>
+        <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.request-controller"/>
+        <extension module="org.wildfly.extension.security.manager"/>
+        <extension module="org.wildfly.extension.undertow"/>
+    </extensions>
+    <management>
+        <security-realms>
+            <security-realm name="ManagementRealm">
+                <plug-ins>
+                    <plug-in module="org.wildfly.swarm.management:runtime"/>
+                </plug-ins>
+                <authentication>
+                    <plug-in name="swarm-in-memory">
+                        <properties/>
+                    </plug-in>
+                </authentication>
+                <authorization>
+                    <plug-in name="swarm-in-memory">
+                        <properties/>
+                    </plug-in>
+                </authorization>
+            </security-realm>
+        </security-realms>
+        <audit-log>
+            <formatters>
+                <json-formatter name="json-formatter"/>
+            </formatters>
+            <handlers>
+                <file-handler name="file" formatter="json-formatter"
+                              relative-to="jboss.server.data.dir" path="audit-log.log"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="false" enabled="false">
+                <handlers>
+                    <handler name="file"/>
+                </handlers>
+            </logger>
+        </audit-log>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
+    </management>
+    <profile>
+        <!-- Swarm: File handlers have been removed: MSA services should not make assumptions about their environment -->
+        <subsystem xmlns="urn:jboss:domain:logging:3.0">
+            <console-handler name="CONSOLE">
+                <level name="INFO"/>
+                <formatter>
+                    <named-formatter name="COLOR-PATTERN"/>
+                </formatter>
+            </console-handler>
+            <logger category="com.arjuna">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.jboss.as.config">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="sun.rmi">
+                <level name="WARN"/>
+            </logger>
+            <root-logger>
+                <level name="DEBUG"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <!-- <handler name="FILE"/>-->
+                </handlers>
+            </root-logger>
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+            <formatter name="COLOR-PATTERN">
+                <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:datasources:4.0">
+            <datasources>
+                <datasource jndi-name="java:jboss/datasources/ExampleDS2" pool-name="ExampleDS2"
+                            enabled="true" use-java-context="true">
+                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+                    </connection-url>
+                    <driver>h2</driver>
+                    <security>
+                        <user-name>sa</user-name>
+                        <password>sa</password>
+                    </security>
+                </datasource>
+                <drivers>
+                    <driver name="h2" module="com.h2database.h2">
+                        <driver-class>org.h2.Driver</driver-class>
+                        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    </driver>
+                </drivers>
+            </datasources>
+        </subsystem>
+
+        <subsystem xmlns="urn:jboss:domain:io:1.1">
+            <worker name="default"/>
+            <buffer-pool name="default"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:jca:4.0">
+            <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
+            <bean-validation enabled="true"/>
+            <default-workmanager>
+                <short-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </long-running-threads>
+            </default-workmanager>
+            <cached-connection-manager/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:security:1.2">
+            <security-domains>
+                <security-domain name="other" cache-type="default">
+                    <authentication>
+                        <login-module code="Remoting" flag="optional">
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
+                        <login-module code="RealmDirect" flag="required">
+                            <module-option name="password-stacking" value="useFirstPass"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>
+                <security-domain name="jboss-web-policy" cache-type="default">
+                    <authorization>
+                        <policy-module code="Delegating" flag="required"/>
+                    </authorization>
+                </security-domain>
+                <security-domain name="jboss-ejb-policy" cache-type="default">
+                    <authorization>
+                        <policy-module code="Delegating" flag="required"/>
+                    </authorization>
+                </security-domain>
+                <security-domain name="jaspitest" cache-type="default">
+                    <authentication-jaspi>
+                        <login-module-stack name="dummy">
+                            <login-module code="Dummy" flag="optional"/>
+                        </login-module-stack>
+                        <auth-module code="Dummy"/>
+                    </authentication-jaspi>
+                </security-domain>
+            </security-domains>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:transactions:3.0">
+            <core-environment>
+                <process-id>
+                    <uuid/>
+                </process-id>
+            </core-environment>
+            <recovery-environment socket-binding="txn-recovery-environment"
+                                  status-socket-binding="txn-status-manager"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:undertow:3.0">
+            <buffer-cache name="default"/>
+            <server name="default-server">
+                <http-listener name="default" socket-binding="http" redirect-socket="https"/>
+                <host name="default-host" alias="localhost">
+                    <location name="/" handler="welcome-content"/>
+                    <filter-ref name="server-header"/>
+                    <filter-ref name="x-powered-by-header"/>
+                </host>
+            </server>
+            <servlet-container name="default">
+                <jsp-config/>
+                <websockets/>
+            </servlet-container>
+            <handlers>
+                <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+            </handlers>
+            <filters>
+                <response-header name="server-header" header-name="Server"
+                                 header-value="WildFly/10"/>
+                <response-header name="x-powered-by-header" header-name="X-Powered-By"
+                                 header-value="Undertow/1"/>
+            </filters>
+        </subsystem>
+
+        <subsystem xmlns="urn:jboss:domain:weld:3.0"/>
+    </profile>
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+    <socket-binding-group name="standard-sockets" default-interface="public"
+                          port-offset="${jboss.socket.binding.port-offset:0}">
+        <socket-binding name="management-http" interface="management"
+                        port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management"
+                        port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+        <socket-binding name="txn-recovery-environment" port="4712"/>
+        <socket-binding name="txn-status-manager" port="4713"/>
+    </socket-binding-group>
+</server>
