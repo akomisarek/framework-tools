@@ -21,7 +21,6 @@
 
     <modules>
         <module>framework-tools-command</module>
-        <module>framework-tools-swarm</module>
         <module>framework-tools-replay</module>
     </modules>
 

@@ -4,7 +4,7 @@ import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.createFromZipFile;
 import static org.wildfly.swarm.Swarm.artifact;
 
-import uk.gov.justice.framework.tools.swarm.command.SwarmCommand;
+import uk.gov.justice.framework.tools.common.command.ShellCommand;
 
 import java.nio.file.Path;
 
@@ -15,9 +15,8 @@ import org.jboss.shrinkwrap.impl.base.filter.ExcludeRegExpPaths;
 import org.wildfly.swarm.Swarm;
 import org.wildfly.swarm.undertow.WARArchive;
 
-
 @Parameters(separators = "=", commandDescription = "Replay Event Stream Command")
-public class Replay extends SwarmCommand {
+public class Replay implements ShellCommand {
 
     private static final String GENERATED_CLASS_PACKAGE_EXPRESSION = "(.*?)uk.gov.justice.api(.*?)";
 
@@ -26,7 +25,7 @@ public class Replay extends SwarmCommand {
 
     public void run(final String[] args) {
         try {
-            new Swarm(firedArgs())
+            new Swarm(args)
                     .start()
                     .deploy(buildDeploymentArtifact());
         } catch (Exception e) {

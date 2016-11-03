@@ -1,7 +1,8 @@
 package uk.gov.justice.framework.tools.replay;
 
-import uk.gov.justice.services.core.annotation.Component;
-import uk.gov.justice.services.core.annotation.ServiceComponentLocation;
+import static uk.gov.justice.services.core.annotation.Component.EVENT_LISTENER;
+import static uk.gov.justice.services.core.annotation.ServiceComponentLocation.LOCAL;
+
 import uk.gov.justice.services.core.dispatcher.Dispatcher;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.JdbcEventRepository;
@@ -25,7 +26,7 @@ public class StartReplay {
     public void initialise() {
         System.out.println("-------------- Replay Event Streams --------------");
 
-        final Dispatcher dispatcher = dispatcherCache.dispatcherFor(Component.EVENT_LISTENER, ServiceComponentLocation.LOCAL);
+        final Dispatcher dispatcher = dispatcherCache.dispatcherFor(EVENT_LISTENER, LOCAL);
 
         jdbcEventRepository.getAll()
                 .peek(System.out::println)
