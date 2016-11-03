@@ -6,25 +6,18 @@
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
-        <extension module="org.jboss.as.jmx"/>
-        <extension module="org.jboss.as.jpa"/>
-        <extension module="org.jboss.as.jsf"/>
         <extension module="org.jboss.as.logging"/>
-        <extension module="org.jboss.as.mail"/>
-        <extension module="org.jboss.as.pojo"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
-        <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
+        <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.bean-validation"/>
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.request-controller"/>
         <extension module="org.wildfly.extension.security.manager"/>
-        <extension module="org.wildfly.extension.undertow"/>
     </extensions>
     <management>
         <security-realms>
@@ -69,7 +62,6 @@
         </access-control>
     </management>
     <profile>
-        <!-- Swarm: File handlers have been removed: MSA services should not make assumptions about their environment -->
         <subsystem xmlns="urn:jboss:domain:logging:3.0">
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
@@ -90,7 +82,6 @@
                 <level name="DEBUG"/>
                 <handlers>
                     <handler name="CONSOLE"/>
-                    <!-- <handler name="FILE"/>-->
                 </handlers>
             </root-logger>
             <formatter name="PATTERN">
@@ -103,20 +94,84 @@
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:4.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS2" pool-name="ExampleDS2"
-                            enabled="true" use-java-context="true">
-                    <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-                    </connection-url>
-                    <driver>h2</driver>
+                <xa-datasource jndi-name="java:/app/notification-event-listener/DS.eventstore"
+                               pool-name="DS.notification.eventstore" enabled="true" spy="true"
+                               statistics-enabled="true" use-java-context="true" use-ccm="true">
+                    <driver>postgres</driver>
+                    <xa-datasource-property name="ServerName">localhost</xa-datasource-property>
+                    <xa-datasource-property name="PortNumber">5432</xa-datasource-property>
+                    <xa-datasource-property name="DatabaseName">notificationeventstore
+                    </xa-datasource-property>
+                    <xa-datasource-property name="ApplicationName">notification
+                    </xa-datasource-property>
+                    <xa-datasource-property name="CurrentSchema">public</xa-datasource-property>
+                    <xa-datasource-property name="LogLevel">0</xa-datasource-property>
+                    <xa-pool>
+                        <min-pool-size>0</min-pool-size>
+                        <initial-pool-size>0</initial-pool-size>
+                        <max-pool-size>5</max-pool-size>
+                        <allow-multiple-users>false</allow-multiple-users>
+                    </xa-pool>
+                    <timeout>
+                        <xa-resource-timeout>0</xa-resource-timeout>
+                    </timeout>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <statement>
+                        <track-statements>true</track-statements>
+                    </statement>
                     <security>
-                        <user-name>sa</user-name>
-                        <password>sa</password>
+                        <user-name>notification</user-name>
+                        <password>notification</password>
                     </security>
-                </datasource>
+                    <validation>
+                        <exception-sorter
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <valid-connection-checker
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                    </validation>
+                </xa-datasource>
+
+                <xa-datasource jndi-name="java:/DS.notification" pool-name="DS.notification"
+                               enabled="true" spy="true" statistics-enabled="true"
+                               use-java-context="true" use-ccm="true">
+                    <driver>postgres</driver>
+                    <xa-datasource-property name="ServerName">localhost</xa-datasource-property>
+                    <xa-datasource-property name="PortNumber">5432</xa-datasource-property>
+                    <xa-datasource-property name="DatabaseName">notificationviewstore
+                    </xa-datasource-property>
+                    <xa-datasource-property name="ApplicationName">notification
+                    </xa-datasource-property>
+                    <xa-datasource-property name="CurrentSchema">public</xa-datasource-property>
+                    <xa-datasource-property name="LogLevel">0</xa-datasource-property>
+                    <xa-pool>
+                        <min-pool-size>0</min-pool-size>
+                        <initial-pool-size>0</initial-pool-size>
+                        <max-pool-size>5</max-pool-size>
+                        <allow-multiple-users>false</allow-multiple-users>
+                    </xa-pool>
+                    <timeout>
+                        <xa-resource-timeout>0</xa-resource-timeout>
+                    </timeout>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <statement>
+                        <track-statements>true</track-statements>
+                    </statement>
+                    <security>
+                        <user-name>notification</user-name>
+                        <password>notification</password>
+                    </security>
+                    <validation>
+                        <exception-sorter
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <valid-connection-checker
+                                class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                    </validation>
+                </xa-datasource>
+
                 <drivers>
-                    <driver name="h2" module="com.h2database.h2">
-                        <driver-class>org.h2.Driver</driver-class>
-                        <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+                    <driver name="postgres" module="org.postgresql">
+                        <driver-class>org.postgresql.Driver</driver-class>
+                        <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
                     </driver>
                 </drivers>
             </datasources>
@@ -145,38 +200,7 @@
             </default-workmanager>
             <cached-connection-manager/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:security:1.2">
-            <security-domains>
-                <security-domain name="other" cache-type="default">
-                    <authentication>
-                        <login-module code="Remoting" flag="optional">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                        <login-module code="RealmDirect" flag="required">
-                            <module-option name="password-stacking" value="useFirstPass"/>
-                        </login-module>
-                    </authentication>
-                </security-domain>
-                <security-domain name="jboss-web-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Delegating" flag="required"/>
-                    </authorization>
-                </security-domain>
-                <security-domain name="jboss-ejb-policy" cache-type="default">
-                    <authorization>
-                        <policy-module code="Delegating" flag="required"/>
-                    </authorization>
-                </security-domain>
-                <security-domain name="jaspitest" cache-type="default">
-                    <authentication-jaspi>
-                        <login-module-stack name="dummy">
-                            <login-module code="Dummy" flag="optional"/>
-                        </login-module-stack>
-                        <auth-module code="Dummy"/>
-                    </authentication-jaspi>
-                </security-domain>
-            </security-domains>
-        </subsystem>
+
         <subsystem xmlns="urn:jboss:domain:transactions:3.0">
             <core-environment>
                 <process-id>
@@ -186,30 +210,7 @@
             <recovery-environment socket-binding="txn-recovery-environment"
                                   status-socket-binding="txn-status-manager"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:undertow:3.0">
-            <buffer-cache name="default"/>
-            <server name="default-server">
-                <http-listener name="default" socket-binding="http" redirect-socket="https"/>
-                <host name="default-host" alias="localhost">
-                    <location name="/" handler="welcome-content"/>
-                    <filter-ref name="server-header"/>
-                    <filter-ref name="x-powered-by-header"/>
-                </host>
-            </server>
-            <servlet-container name="default">
-                <jsp-config/>
-                <websockets/>
-            </servlet-container>
-            <handlers>
-                <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
-            </handlers>
-            <filters>
-                <response-header name="server-header" header-name="Server"
-                                 header-value="WildFly/10"/>
-                <response-header name="x-powered-by-header" header-name="X-Powered-By"
-                                 header-value="Undertow/1"/>
-            </filters>
-        </subsystem>
+
 
         <subsystem xmlns="urn:jboss:domain:weld:3.0"/>
     </profile>
@@ -224,13 +225,13 @@
     <socket-binding-group name="standard-sockets" default-interface="public"
                           port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="management-http" interface="management"
-                        port="${jboss.management.http.port:9990}"/>
+                        port="${jboss.management.http.port:9991}"/>
         <socket-binding name="management-https" interface="management"
-                        port="${jboss.management.https.port:9993}"/>
-        <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
-        <socket-binding name="http" port="${jboss.http.port:8080}"/>
-        <socket-binding name="https" port="${jboss.https.port:8443}"/>
-        <socket-binding name="txn-recovery-environment" port="4712"/>
-        <socket-binding name="txn-status-manager" port="4713"/>
+                        port="${jboss.management.https.port:9994}"/>
+        <socket-binding name="ajp" port="${jboss.ajp.port:8010}"/>
+        <socket-binding name="http" port="${jboss.http.port:8181}"/>
+        <socket-binding name="https" port="${jboss.https.port:8444}"/>
+        <socket-binding name="txn-recovery-environment" port="4713"/>
+        <socket-binding name="txn-status-manager" port="4714"/>
     </socket-binding-group>
 </server>

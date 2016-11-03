@@ -88,3 +88,4 @@ Thumbs.db
 /components/command/command-handler/conf/login.config
 /components/command/command-handler/conf/openejb.xml
 /components/command/command-handler/conf/users.properties
+/framework-tools-replay/*.war
