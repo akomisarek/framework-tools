@@ -113,12 +113,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.moj.cpp.notification</groupId>
-            <artifactId>notification-viewstore-liquibase</artifactId>
-            <version>1.0.12-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-persistence</artifactId>
             <version>${framework.version}</version>
