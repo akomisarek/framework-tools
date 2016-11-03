@@ -15,7 +15,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <framework.version>0.33.0</framework.version>
+        <framework.version>0.34.0-SNAPSHOT</framework.version>
     </properties>
 
     <dependencyManagement>
@@ -143,6 +143,12 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.jayway.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>uk.gov.justice.services</groupId>
             <artifactId>test-utils-persistence</artifactId>

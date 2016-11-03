@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.wildfly.swarm.Swarm;
 import org.wildfly.swarm.undertow.WARArchive;
 
+
 @Parameters(separators = "=", commandDescription = "Replay Event Stream Command")
 public class Replay implements ShellCommand {
 
@@ -45,14 +46,17 @@ public class Replay implements ShellCommand {
         try {
             return create(WARArchive.class, "replay-tool.war")
                     .addAsLibraries(artifact("org.glassfish:javax.json"))
-                    .addAsLibraries(artifact("org.slf4j:slf4j-log4j12"))
                     .addAsLibraries(artifact("uk.gov.justice.services:event-repository-jdbc"))
                     .addAsLibraries(artifact("uk.gov.justice.services:event-repository-core"))
+                    .addAsLibraries(artifact("uk.gov.justice.services:persistence-jdbc"))
                     .merge(excludeGeneratedApiClasses)
+                    .addClass(AsyncStreamDispatcher.class)
+                    .addClass(TransactionalEnvelopeDispatcher.class)
                     .addClass(StartReplay.class);
         } catch (Exception e) {
             LOGGER.error("Missing required libraries, unable to create deployable War", e);
             throw e;
         }
+
     }
 }
