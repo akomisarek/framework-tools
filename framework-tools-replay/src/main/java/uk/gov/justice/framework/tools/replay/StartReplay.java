@@ -6,15 +6,23 @@ import static uk.gov.justice.services.core.annotation.ServiceComponentLocation.L
 import uk.gov.justice.services.core.dispatcher.Dispatcher;
 import uk.gov.justice.services.core.dispatcher.DispatcherCache;
 import uk.gov.justice.services.eventsourcing.repository.jdbc.JdbcEventRepository;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+
 @Singleton
 @Startup
 public class StartReplay {
+
+    @Inject
+    Logger logger;
 
     @Inject
     DispatcherCache dispatcherCache;
@@ -24,16 +32,18 @@ public class StartReplay {
 
     @PostConstruct
     public void initialise() {
-        System.out.println("-------------- Replay Event Streams --------------");
+        logger.info("-------------- Replay Event Streams --------------");
 
         final Dispatcher dispatcher = dispatcherCache.dispatcherFor(EVENT_LISTENER, LOCAL);
 
-        jdbcEventRepository.getAll()
-                .peek(System.out::println)
-                .forEach(dispatcher::dispatch);
+        try (final Stream<JsonEnvelope> envelopeStream = jdbcEventRepository.getAll()) {
+            envelopeStream
+                    .peek(jsonEnvelope -> logger.info(jsonEnvelope.toString()))
+                    .forEach(dispatcher::dispatch);
+        }
 
-        System.out.println("-------------- Replay of Event Streams Complete --------------");
-        System.out.println("--------------        Press Ctrl+C to exit      --------------");
+        logger.info("-------------- Replay of Event Streams Complete --------------");
+        logger.info("--------------        Press Ctrl+C to exit      --------------");
     }
 
 }

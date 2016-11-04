@@ -15,6 +15,7 @@ public class Bootstrap {
 
     private Bootstrap() {
         this.commander = new JCommander();
+        this.commander.setAcceptUnknownOptions(true);
     }
 
     public static void main(final String... args) throws Exception {
@@ -25,15 +26,13 @@ public class Bootstrap {
         final Reflections reflections = new Reflections("uk.gov.justice.framework.tools");
         final Set<Class<? extends ShellCommand>> subTypes = reflections.getSubTypesOf(ShellCommand.class);
 
-        commander.setAcceptUnknownOptions(true);
-
         subTypes.stream()
                 .filter(this::commandClassIsNotAbstract)
                 .forEach(this::createInstanceAndAddToJCommander);
 
         commander.parse(args);
 
-        getParsedCommand().ifPresent(o -> ((ShellCommand) o).run(args));
+        getParsedCommand().ifPresent(command -> ((ShellCommand) command).run(args));
     }
 
     private Optional<Object> getParsedCommand() {
@@ -48,9 +47,9 @@ public class Bootstrap {
         return !isAbstract(commandClass.getModifiers());
     }
 
-    private void createInstanceAndAddToJCommander(final Class<? extends ShellCommand> aClass) {
+    private void createInstanceAndAddToJCommander(final Class<? extends ShellCommand> commandClass) {
         try {
-            commander.addCommand(aClass.getSimpleName().toLowerCase(), forName(aClass.getName()).newInstance());
+            commander.addCommand(commandClass.getSimpleName().toLowerCase(), forName(commandClass.getName()).newInstance());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             e.printStackTrace();
         }

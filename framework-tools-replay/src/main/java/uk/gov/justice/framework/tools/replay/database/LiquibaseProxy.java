@@ -1,4 +1,4 @@
-package uk.gov.justice.framework.replay.database;
+package uk.gov.justice.framework.tools.replay.database;
 
 import liquibase.Liquibase;
 import liquibase.exception.DatabaseException;
@@ -17,7 +17,7 @@ public class LiquibaseProxy {
         liquibase.dropAll();
     }
 
-    public void update(String contexts) throws LiquibaseException {
+    public void update(final String contexts) throws LiquibaseException {
         liquibase.update(contexts);
     }
 

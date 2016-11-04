@@ -37,10 +37,28 @@
             <dependency>
                 <groupId>uk.gov.justice</groupId>
                 <artifactId>maven-common-bom</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${plugins.jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>uk/gov/justice/framework/tools/replay/Replay.class</exclude>
+                        <exclude>uk/gov/justice/framework/tools/replay/database/LiquibaseFactory.class</exclude>
+                        <exclude>uk/gov/justice/framework/tools/replay/database/LiquibaseProxy.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
