@@ -1,4 +1,4 @@
-package uk.gov.justice.framework.replay.database;
+package uk.gov.justice.framework.tools.replay.database;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.framework.replay.Constants.AN_EMPTY_STRING;
 
 import java.sql.SQLException;
 
@@ -20,6 +19,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DatabaseCleanerTest {
+
+    private static final String NO_CONTEXT_MODE = "";
 
     @Mock
     private DataSourceFactory dataSourceFactory;
@@ -53,7 +54,7 @@ public class DatabaseCleanerTest {
         verify(dataSource).setPassword(contextName);
 
         verify(liquibase).dropAll();
-        verify(liquibase).update(AN_EMPTY_STRING);
+        verify(liquibase).update(NO_CONTEXT_MODE);
 
         verify(dataSource).close();
     }

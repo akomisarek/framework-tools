@@ -1,4 +1,4 @@
-package uk.gov.justice.framework.replay.database;
+package uk.gov.justice.framework.tools.replay.database;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 

@@ -1,6 +1,4 @@
-package uk.gov.justice.framework.replay.database;
-
-import static uk.gov.justice.framework.replay.Constants.AN_EMPTY_STRING;
+package uk.gov.justice.framework.tools.replay.database;
 
 import java.sql.SQLException;
 
@@ -12,6 +10,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 public class DatabaseCleaner {
 
     private static final String POSTGRES_DRIVER = "org.postgresql.Driver";
+    private static final String NO_CONTEXT_MODE = "";
 
     @Inject
     DataSourceFactory dataSourceFactory;
@@ -34,7 +33,7 @@ public class DatabaseCleaner {
             final LiquibaseProxy liquibase = liquibaseFactory.create(liquibaseChangeLogXml, dataSource);
 
             liquibase.dropAll();
-            liquibase.update(AN_EMPTY_STRING);
+            liquibase.update(NO_CONTEXT_MODE);
 
         } catch (LiquibaseException | SQLException e) {
             throw new RuntimeException("Failed to run liquibase rebuild", e);

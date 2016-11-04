@@ -12,6 +12,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.filter.ExcludeRegExpPaths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wildfly.swarm.Swarm;
 import org.wildfly.swarm.undertow.WARArchive;
 
@@ -19,6 +21,7 @@ import org.wildfly.swarm.undertow.WARArchive;
 public class Replay implements ShellCommand {
 
     private static final String GENERATED_CLASS_PACKAGE_EXPRESSION = "(.*?)uk.gov.justice.api(.*?)";
+    private static final Logger LOGGER = LoggerFactory.getLogger(Replay.class);
 
     @Parameter(names = "-l", description = "external library")
     private Path library;
@@ -29,7 +32,7 @@ public class Replay implements ShellCommand {
                     .start()
                     .deploy(buildDeploymentArtifact());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to start Wildfly Swarm and deploy War file", e);
         }
     }
 
@@ -39,11 +42,17 @@ public class Replay implements ShellCommand {
         final WebArchive excludeGeneratedApiClasses = create(WebArchive.class, "ExcludeGeneratedApiClasses")
                 .merge(webArchive, new ExcludeRegExpPaths(GENERATED_CLASS_PACKAGE_EXPRESSION));
 
-        return create(WARArchive.class, "replay-tool.war")
-                .addAsLibraries(artifact("org.glassfish:javax.json"))
-                .addAsLibraries(artifact("uk.gov.justice.services:event-repository-jdbc"))
-                .addAsLibraries(artifact("uk.gov.justice.services:event-repository-core"))
-                .merge(excludeGeneratedApiClasses)
-                .addClass(StartReplay.class);
+        try {
+            return create(WARArchive.class, "replay-tool.war")
+                    .addAsLibraries(artifact("org.glassfish:javax.json"))
+                    .addAsLibraries(artifact("org.slf4j:slf4j-log4j12"))
+                    .addAsLibraries(artifact("uk.gov.justice.services:event-repository-jdbc"))
+                    .addAsLibraries(artifact("uk.gov.justice.services:event-repository-core"))
+                    .merge(excludeGeneratedApiClasses)
+                    .addClass(StartReplay.class);
+        } catch (Exception e) {
+            LOGGER.error("Missing required libraries, unable to create deployable War", e);
+            throw e;
+        }
     }
 }

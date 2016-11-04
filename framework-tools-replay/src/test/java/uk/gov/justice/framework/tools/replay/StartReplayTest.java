@@ -18,12 +18,16 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StartReplayTest {
 
     @Mock
     Dispatcher dispatcher;
+
+    @Mock
+    Logger logger;
 
     @Mock
     private DispatcherCache dispatcherCache;
