@@ -2,15 +2,18 @@ package uk.gov.justice.framework.tools.common.command;
 
 import static java.lang.Class.forName;
 import static java.lang.reflect.Modifier.isAbstract;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Optional;
 import java.util.Set;
 
 import com.beust.jcommander.JCommander;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
 
 public class Bootstrap {
 
+    private static final Logger LOGGER = getLogger(Bootstrap.class);
     private final JCommander commander;
 
     private Bootstrap() {
@@ -32,15 +35,16 @@ public class Bootstrap {
 
         commander.parse(args);
 
-        getParsedCommand().ifPresent(command -> ((ShellCommand) command).run(args));
+        getParsedShellCommand().ifPresent(command -> command.run(args));
     }
 
-    private Optional<Object> getParsedCommand() {
+    private Optional<ShellCommand> getParsedShellCommand() {
         return commander
                 .getCommands()
                 .get(commander.getParsedCommand())
                 .getObjects().stream()
-                .findFirst();
+                .findFirst()
+                .map(command -> ((ShellCommand) command));
     }
 
     private boolean commandClassIsNotAbstract(final Class<? extends ShellCommand> commandClass) {
@@ -51,7 +55,7 @@ public class Bootstrap {
         try {
             commander.addCommand(commandClass.getSimpleName().toLowerCase(), forName(commandClass.getName()).newInstance());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.error("Unable to create instance of ", commandClass.getName());
         }
     }
 }
