@@ -43,20 +43,20 @@ public class StartReplay {
     private final Deque<Future<Void>> dispatchResults = new LinkedList<>();
 
 
-
     @PostConstruct
     void go() throws InterruptedException {
         final long startTimeMillis = currentTimeMillis();
         LOGGER.info("-------------- Replay Event Streams -------------!");
 
-        final Stream<Stream<JsonEnvelope>> streamOfEventStreams = jdbcEventRepository.getStreamOfAllEventStreams();
-        streamOfEventStreams.forEach(s -> {
-            dispatchResults.add(asyncStreamDispatcher.dispatch(s));
-        });
-        started = true;
+        try (final Stream<Stream<JsonEnvelope>> streamOfEventStreams = jdbcEventRepository.getStreamOfAllEventStreams()) {
+            streamOfEventStreams.forEach(s -> {
+                dispatchResults.add(asyncStreamDispatcher.dispatch(s));
+            });
+            started = true;
 
-        while (!finished()) {
-            Thread.sleep(3000);
+            while (!finished()) {
+                Thread.sleep(3000);
+            }
         }
 
         LOGGER.info("-------------- Replay of Event Streams Completed in {} milliseconds--------------", currentTimeMillis() - startTimeMillis);
