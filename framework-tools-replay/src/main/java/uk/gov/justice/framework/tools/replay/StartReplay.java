@@ -60,7 +60,6 @@ public class StartReplay {
         }
 
         LOGGER.info("-------------- Replay of Event Streams Completed in {} milliseconds--------------", currentTimeMillis() - startTimeMillis);
-        LOGGER.info("--------------        Press Ctrl+C to exit      --------------");
     }
 
 

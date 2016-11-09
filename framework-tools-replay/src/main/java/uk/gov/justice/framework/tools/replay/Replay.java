@@ -31,7 +31,9 @@ public class Replay implements ShellCommand {
         try {
             new Swarm(args)
                     .start()
-                    .deploy(buildDeploymentArtifact());
+                    .deploy(buildDeploymentArtifact())
+                    .stop();
+            System.exit(0);
         } catch (Exception e) {
             LOGGER.error("Failed to start Wildfly Swarm and deploy War file", e);
         }
