@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.filter.ExcludeRegExpPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wildfly.swarm.Swarm;
@@ -21,7 +20,6 @@ import org.wildfly.swarm.undertow.WARArchive;
 @Parameters(separators = "=", commandDescription = "Replay Event Stream Command")
 public class Replay implements ShellCommand {
 
-    private static final String GENERATED_CLASS_PACKAGE_EXPRESSION = "(.*?)uk.gov.justice.api(.*?)";
     private static final Logger LOGGER = LoggerFactory.getLogger(Replay.class);
 
     @Parameter(names = "-l", description = "external library")
@@ -42,15 +40,19 @@ public class Replay implements ShellCommand {
     private WARArchive buildDeploymentArtifact() throws Exception {
         final WebArchive webArchive = createFromZipFile(WebArchive.class, library.toFile());
 
+        FrameworkLibraries libraries = new FrameworkLibraries(
+                "uk.gov.justice.services:event-repository-jdbc",
+                "uk.gov.justice.services:event-repository-core",
+                "uk.gov.justice.services:core",
+                "uk.gov.justice.services:persistence-jdbc");
+
         final WebArchive excludeGeneratedApiClasses = create(WebArchive.class, "ExcludeGeneratedApiClasses")
-                .merge(webArchive, new ExcludeRegExpPaths(GENERATED_CLASS_PACKAGE_EXPRESSION));
+                .merge(webArchive, libraries.exclusionFilter());
 
         try {
             return create(WARArchive.class, "replay-tool.war")
                     .addAsLibraries(artifact("org.glassfish:javax.json"))
-                    .addAsLibraries(artifact("uk.gov.justice.services:event-repository-jdbc"))
-                    .addAsLibraries(artifact("uk.gov.justice.services:event-repository-core"))
-                    .addAsLibraries(artifact("uk.gov.justice.services:persistence-jdbc"))
+                    .addAsLibraries(libraries.shrinkWrapArchives())
                     .merge(excludeGeneratedApiClasses)
                     .addClass(AsyncStreamDispatcher.class)
                     .addClass(TransactionalEnvelopeDispatcher.class)
