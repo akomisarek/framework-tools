@@ -12,7 +12,7 @@ public class DataSourceFactoryTest {
     private final DataSourceFactory dataSourceFactory = new DataSourceFactory();
 
     @Test
-    public void shouldCreateABasicDataSource() throws Exception {
+    public void shouldCreateBasicDataSource() throws Exception {
 
         assertThat(dataSourceFactory.create(), is(instanceOf(BasicDataSource.class)));
     }

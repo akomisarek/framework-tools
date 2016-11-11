@@ -5,6 +5,10 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.LockException;
 
+/**
+ * Proxy used to expose only methods used and to enable unit testing as some Liquibase methods are
+ * final and cannot be mocked.
+ */
 public class LiquibaseProxy {
 
     private final Liquibase liquibase;
@@ -19,9 +23,5 @@ public class LiquibaseProxy {
 
     public void update(final String contexts) throws LiquibaseException {
         liquibase.update(contexts);
-    }
-
-    public Liquibase getLiquibase() {
-        return liquibase;
     }
 }

@@ -7,3 +7,4 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ### Added
 - Replay Event Stream tool
+- View Store database cleaner to occur prior to event replay 

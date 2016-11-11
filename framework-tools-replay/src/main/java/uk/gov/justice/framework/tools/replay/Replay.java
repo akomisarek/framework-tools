@@ -3,6 +3,7 @@ package uk.gov.justice.framework.tools.replay;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.createFromZipFile;
 import static org.wildfly.swarm.Swarm.artifact;
+import static uk.gov.justice.framework.tools.replay.database.DatabaseCleaner.defaultDatabaseCleaner;
 
 import uk.gov.justice.framework.tools.common.command.ShellCommand;
 
@@ -25,11 +26,20 @@ public class Replay implements ShellCommand {
     @Parameter(names = "-l", description = "external library")
     private Path library;
 
+    @Parameter(names = "-vl", description = "Viewstore Liquibase jar library")
+    private Path viewstoreLibrary;
+
+    @Parameter(names = "-n", description = "Name of the context")
+    private String nameOfContext;
+
     public void run(final String[] args) {
+
         try {
-            new Swarm(args)
-                    .start()
-                    .deploy(buildDeploymentArtifact())
+            final Swarm swarm = new Swarm(args).start();
+
+            cleanViewStore();
+
+            swarm.deploy(buildDeploymentArtifact())
                     .stop();
             System.exit(0);
         } catch (Exception e) {
@@ -37,10 +47,18 @@ public class Replay implements ShellCommand {
         }
     }
 
+    private void cleanViewStore() {
+        LOGGER.info("-------------- Clean Viewstore --------------");
+
+        defaultDatabaseCleaner().rebuildDatabase(nameOfContext, viewstoreLibrary);
+
+        LOGGER.info("-------------- Clean Viewstore Complete --------------");
+    }
+
     private WARArchive buildDeploymentArtifact() throws Exception {
         final WebArchive webArchive = createFromZipFile(WebArchive.class, library.toFile());
 
-        FrameworkLibraries libraries = new FrameworkLibraries(
+        final FrameworkLibraries frameworkLibraries = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc",
                 "uk.gov.justice.services:event-repository-core",
                 "uk.gov.justice.services:core",
@@ -48,12 +66,12 @@ public class Replay implements ShellCommand {
                 "uk.gov.justice.services:event-buffer-core");
 
         final WebArchive excludeGeneratedApiClasses = create(WebArchive.class, "ExcludeGeneratedApiClasses")
-                .merge(webArchive, libraries.exclusionFilter());
+                .merge(webArchive, frameworkLibraries.exclusionFilter());
 
         try {
             return create(WARArchive.class, "replay-tool.war")
                     .addAsLibraries(artifact("org.glassfish:javax.json"))
-                    .addAsLibraries(libraries.shrinkWrapArchives())
+                    .addAsLibraries(frameworkLibraries.shrinkWrapArchives())
                     .merge(excludeGeneratedApiClasses)
                     .addClass(AsyncStreamDispatcher.class)
                     .addClass(TransactionalEnvelopeDispatcher.class)
