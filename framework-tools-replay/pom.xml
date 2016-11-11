@@ -54,6 +54,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>uk.gov.justice.services</groupId>
+            <artifactId>event-buffer-core</artifactId>
+            <version>${framework.version}</version>
+        </dependency>
 
         <!--Wildfly Swarm-->
         <dependency>
