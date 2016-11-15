@@ -3,7 +3,6 @@ package uk.gov.justice.framework.tools.replay;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.createFromZipFile;
 import static org.wildfly.swarm.Swarm.artifact;
-import static uk.gov.justice.framework.tools.replay.database.DatabaseCleaner.defaultDatabaseCleaner;
 
 import uk.gov.justice.framework.tools.common.command.ShellCommand;
 
@@ -26,33 +25,17 @@ public class Replay implements ShellCommand {
     @Parameter(names = "-l", description = "external library")
     private Path library;
 
-    @Parameter(names = "-vl", description = "Viewstore Liquibase jar library")
-    private Path viewstoreLibrary;
-
-    @Parameter(names = "-n", description = "Name of the context")
-    private String nameOfContext;
-
     public void run(final String[] args) {
 
         try {
-            final Swarm swarm = new Swarm(args).start();
-
-            cleanViewStore();
-
-            swarm.deploy(buildDeploymentArtifact())
+            new Swarm(args)
+                    .start()
+                    .deploy(buildDeploymentArtifact())
                     .stop();
             System.exit(0);
         } catch (Exception e) {
             LOGGER.error("Failed to start Wildfly Swarm and deploy War file", e);
         }
-    }
-
-    private void cleanViewStore() {
-        LOGGER.info("-------------- Clean Viewstore --------------");
-
-        defaultDatabaseCleaner().rebuildDatabase(nameOfContext, viewstoreLibrary);
-
-        LOGGER.info("-------------- Clean Viewstore Complete --------------");
     }
 
     private WARArchive buildDeploymentArtifact() throws Exception {
