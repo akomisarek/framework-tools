@@ -13,16 +13,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <framework.version>0.34.0-SNAPSHOT</framework.version>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wildfly.swarm</groupId>
                 <artifactId>bom-all</artifactId>
-                <version>${version.wildfly.swarm}</version>
+                <version>${wildfly.swarm.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -145,7 +141,7 @@
             <plugin>
                 <groupId>org.wildfly.swarm</groupId>
                 <artifactId>wildfly-swarm-plugin</artifactId>
-                <version>${version.wildfly.swarm}</version>
+                <version>${wildfly.swarm.version}</version>
                 <configuration>
                     <mainClass>uk.gov.justice.framework.tools.common.command.Bootstrap</mainClass>
                 </configuration>
