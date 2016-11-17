@@ -5,5 +5,7 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ## [Unreleased]
 
+## [1.0.0] - 2016-11-17
+
 ### Added
 - Replay Event Stream tool
