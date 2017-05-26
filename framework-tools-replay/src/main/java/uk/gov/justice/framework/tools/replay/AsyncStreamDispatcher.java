@@ -1,8 +1,10 @@
 package uk.gov.justice.framework.tools.replay;
 
+import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
 import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.messaging.Metadata;
 
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -37,7 +39,13 @@ public class AsyncStreamDispatcher {
                 if (firstElement(noOfProcessedElements)) {
                     LOGGER.info("Starting processing of stream: {}", streamIdOf(e));
                 }
-                dispatcher.dispatch(e);
+                try {
+                    dispatcher.dispatch(e);
+                } catch(MissingHandlerException ex) {
+                    final Metadata metadata = e.metadata();
+                    LOGGER.warn("Missing handler for stream Id: {}, event name: {}, version: {}", metadata.streamId().get(),
+                            metadata.name(), metadata.version().get());
+                }
                 noOfProcessedElements[0]++;
                 if (shouldLogProgress(noOfProcessedElements)) {
                     LOGGER.info("Processed {} elements of stream: {}", noOfProcessedElements[0], streamIdOf(e));
