@@ -12,7 +12,7 @@
 
     <artifactId>framework-tools</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
 
     <properties>
         <framework.version>1.7.0</framework.version>
