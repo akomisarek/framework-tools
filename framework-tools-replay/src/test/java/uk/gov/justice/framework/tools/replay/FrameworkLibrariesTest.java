@@ -16,23 +16,23 @@ public class FrameworkLibrariesTest {
     public void shouldReturnShrinkwrapArchives() throws Exception {
         FrameworkLibraries frameworkLibraries = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc",
-                "uk.gov.justice.services:event-repository-core");
+                "uk.gov.justice.services:framework-api-core");
 
         Archive<?>[] archives = frameworkLibraries.shrinkWrapArchives();
 
         assertThat(archives[0].getName(), startsWith("event-repository-jdbc"));
-        assertThat(archives[1].getName(), startsWith("event-repository-core"));
+        assertThat(archives[1].getName(), startsWith("framework-api-core"));
     }
 
     @Test
     public void shouldReturnExclusionFilter() throws Exception {
         Filter<ArchivePath> filter = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc",
-                "uk.gov.justice.services:event-repository-core")
+                "uk.gov.justice.services:framework-api-core")
                 .exclusionFilter();
 
         assertThat(filter.include(new BasicPath("/WEB-INF/lib/event-repository-jdbc")), is(false));
-        assertThat(filter.include(new BasicPath("/WEB-INF/lib/event-repository-core")), is(false));
+        assertThat(filter.include(new BasicPath("/WEB-INF/lib/framework-api-core")), is(false));
         assertThat(filter.include(new BasicPath("/WEB-INF/lib/other")), is(true));
 
     }
