@@ -5,6 +5,15 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ## [Unreleased]
 
+## [2.0.0] - 2017-09-15
+
+### Changed
+- Converted to Bintray released
+- Upgraded to framework 2.2.1
+
+### Added
+- Coveralls added to build
+
 ## [1.2.0] - 2017-05-26
 
 ### Updated
