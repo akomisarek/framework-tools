@@ -43,7 +43,7 @@ public class Replay implements ShellCommand {
 
         final FrameworkLibraries frameworkLibraries = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc",
-                "uk.gov.justice.services:event-repository-core",
+                "uk.gov.justice.services:framework-api-core",
                 "uk.gov.justice.services:core",
                 "uk.gov.justice.services:persistence-jdbc",
                 "uk.gov.justice.services:event-buffer-core");
