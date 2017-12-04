@@ -1,63 +1,53 @@
 package uk.gov.justice.framework.tools.replay;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
-import java.util.UUID;
-import java.util.concurrent.Future;
-import java.util.stream.Stream;
-
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.UUID;
+import java.util.stream.Stream;
 
 @Stateless
 public class AsyncStreamDispatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamDispatcher.class);
-
     @Inject
-    private TransactionalEnvelopeDispatcher dispatcher;
-
+    private TransactionalEnvelopeDispatcher envelopeDispatcher;
     @Inject
     private StreamStatusJdbcRepository streamStatusRepository;
 
-    @Asynchronous
-    public Future<Void> dispatch(final Stream<JsonEnvelope> stream) {
+    public UUID dispatch(final Stream<JsonEnvelope> stream) {
         final int[] noOfProcessedElements = {0};
-        final JsonEnvelope[] envelope = {null};
+        final JsonEnvelope[] envelopes = {null};
 
         try (final Stream<JsonEnvelope> stream1 = stream) {
-            stream1.forEach(e -> {
+            stream1.forEach(envelope -> {
                 if (firstElement(noOfProcessedElements)) {
-                    LOGGER.info("Starting processing of stream: {}", streamIdOf(e));
+                    LOGGER.info("Starting processing of stream: {}", streamIdOf(envelope));
                 }
                 try {
-                    dispatcher.dispatch(e);
+                    envelopeDispatcher.dispatch(envelope);
                 } catch(MissingHandlerException ex) {
-                    final Metadata metadata = e.metadata();
+                    final Metadata metadata = envelope.metadata();
                     LOGGER.warn("Missing handler for stream Id: {}, event name: {}, version: {}", metadata.streamId().get(),
                             metadata.name(), metadata.version().get());
                 }
                 noOfProcessedElements[0]++;
                 if (shouldLogProgress(noOfProcessedElements)) {
-                    LOGGER.info("Processed {} elements of stream: {}", noOfProcessedElements[0], streamIdOf(e));
+                    LOGGER.info("Processed {} elements of stream: {}", noOfProcessedElements[0], streamIdOf(envelope));
                 }
-                envelope[0] = e;
+                envelopes[0] = envelope;
             });
-
-            streamStatusRepository.insert(new StreamStatus(streamIdOf(envelope[0]), versionOf(envelope[0])));
-            LOGGER.info("Finished processing of stream: {}, elements processed: {}", streamIdOf(envelope[0]), noOfProcessedElements[0]);
+            final UUID streamId = streamIdOf(envelopes[0]);
+            streamStatusRepository.insert(new StreamStatus(streamId, versionOf(envelopes[0])));
+            LOGGER.info("Finished processing of stream: {}, elements processed: {}", streamId, noOfProcessedElements[0]);
+            return streamId;
         }
-        return new AsyncResult<>(null);
-
     }
 
     private UUID streamIdOf(final JsonEnvelope envelope) {
