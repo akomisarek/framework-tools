@@ -1,0 +1,10 @@
+#%RAML 0.8
+title: API Using media type in the URL
+baseUri: message://event/listener/message/cakeshop
+version: v1
+/example.event:
+  post:
+    body:
+        application/vnd.framework.example-test+json:
+            schema: !include json/schema/framework.example-test.json
+            example: !include json/framework.example-test.json
