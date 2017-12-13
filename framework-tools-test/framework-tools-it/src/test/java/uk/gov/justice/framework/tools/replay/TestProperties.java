@@ -11,7 +11,6 @@ import java.util.Properties;
  * accessor method
  */
 public class TestProperties {
-    private static TestProperties instance;
     private final Properties properties = new Properties();
 
     public TestProperties(final String propertyFileName) {

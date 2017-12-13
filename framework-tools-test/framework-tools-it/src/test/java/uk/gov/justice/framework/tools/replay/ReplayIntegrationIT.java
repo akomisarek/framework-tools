@@ -34,10 +34,7 @@ import org.junit.Test;
 
 public class ReplayIntegrationIT {
 
-    private static final String SWARM_DEBUG_MODE = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
-
     private static final TestProperties TEST_PROPERTIES = new TestProperties("test.properties");
-    private static final String H2_DRIVER = "org.h2.Driver";
 
     private static final UUID STREAM_ID = randomUUID();
 
@@ -51,12 +48,8 @@ public class ReplayIntegrationIT {
 
     @Test
     public void runReplayTool() throws Exception {
-        final String command = createCommandToExecuteReplay();
-
-        final UUID streamId = randomUUID();
-        insertEventLogData(streamId);
-        final boolean matches = runCommand(command);
-        assertTrue(matches);
+        insertEventLogData();
+        assertTrue(runCommand(createCommandToExecuteReplay()));
     }
 
     @After
@@ -99,13 +92,13 @@ public class ReplayIntegrationIT {
         final String standaloneDSLocation = getResource("standalone-ds.xml");
         final String listenerLocation = getResource("framework-tools-test-listener*.war");
 
-        String deubug = "";
+        String debug = "";
 
-        if (TEST_PROPERTIES.value("swarm.debug").equals("true")) {
-            deubug = SWARM_DEBUG_MODE;
+        if (TEST_PROPERTIES.value("swarm.debug.enabled").equals("true")) {
+            debug = TEST_PROPERTIES.value("swarm.debug.args");
         }
 
-        final String command = commandFrom(deubug, replayJarLocation, standaloneDSLocation, listenerLocation);
+        final String command = commandFrom(debug, replayJarLocation, standaloneDSLocation, listenerLocation);
 
         return command;
     }
@@ -126,7 +119,7 @@ public class ReplayIntegrationIT {
                                            final String dbPasswordPropertyName,
                                            final String... liquibaseChangeLogXmls) throws Exception {
         final BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(H2_DRIVER);
+        dataSource.setDriverClassName(TEST_PROPERTIES.value("db.driver"));
 
         dataSource.setUrl(TEST_PROPERTIES.value(dbUrlPropertyName));
         dataSource.setUsername(TEST_PROPERTIES.value(dbUserNamePropertyName));
@@ -158,19 +151,21 @@ public class ReplayIntegrationIT {
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(exec.getInputStream()));
 
+        final Pattern p = Pattern.compile(".*caught a fish.*", Pattern.MULTILINE | Pattern.DOTALL);
         boolean matches = false;
         String line = "";
         while ((line = reader.readLine()) != null) {
-            Pattern p = Pattern.compile(".*caught a fish.*", Pattern.MULTILINE | Pattern.DOTALL);
+
             if (p.matcher(line).matches()) {
                 matches = true;
             }
             System.out.println(line);
         }
+        exec.destroyForcibly();
         return matches;
     }
 
-    private void insertEventLogData(final UUID streamId) throws SQLException, InvalidSequenceIdException {
+    private void insertEventLogData() throws SQLException, InvalidSequenceIdException {
         EVENT_LOG_REPOSITORY.insert(eventLogFrom("framework.example-test"));
     }
 }
