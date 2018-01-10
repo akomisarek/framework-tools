@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import static java.lang.String.format;
 import static uk.gov.justice.framework.tools.replay.DatabaseUtils.initEventStoreDb;
 import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
 import static uk.gov.justice.services.test.utils.common.reflection.ReflectionUtils.setField;
@@ -48,11 +49,12 @@ public class TestEventLogRepository extends EventLogJdbcRepository {
     }
 
 
-    public List<String> insertEventLogData(UUID streamId) throws SQLException, InvalidSequenceIdException {
+    public List<String> insertEventLogData(UUID streamId) throws InvalidSequenceIdException {
         List<String> insertedEvents = new LinkedList<>();
         Long sequenceId = 0L;
         for (int count = 0; count < 5; count++) {
             EventLog eventLog = eventLogFrom("framework.example-test", streamId, ++sequenceId);
+            System.out.println(format("Inserting event-stream with id %s", eventLog.getId()));
             this.insert(eventLog);
             insertedEvents.add(eventLog.getId().toString());
         }
