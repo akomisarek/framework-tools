@@ -1,7 +1,16 @@
 package uk.gov.justice.framework.tools.replay;
 
-import org.slf4j.Logger;
+import static org.wildfly.swarm.bootstrap.Main.MAIN_PROCESS_FILE;
+
 import uk.gov.justice.services.eventsourcing.repository.jdbc.JdbcEventRepository;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Deque;
+import java.util.UUID;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -10,14 +19,15 @@ import javax.ejb.Startup;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedTaskListener;
 import javax.inject.Inject;
-import java.util.Deque;
-import java.util.UUID;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingDeque;
+
+import org.slf4j.Logger;
 
 @Singleton
 @Startup
 public class StartReplay implements ManagedTaskListener {
+
+    private static final String NO_PROCESS_FILE_WARNING = "!!!!! No Swarm Process File specific, application will not auto-shutdown on completion. " +
+            "Please use option '-Dorg.wildfly.swarm.mainProcessFile=/pathTo/aFile' to specify location of process file with read/write permissions !!!!!";
 
     @Inject
     private Logger logger;
@@ -36,6 +46,7 @@ public class StartReplay implements ManagedTaskListener {
     @PostConstruct
     void go() {
         logger.info("-------------- Invoke Event Streams Replay-------------!");
+        checkForMainProcessFile();
         jdbcEventRepository.getStreamOfAllEventStreams()
                 .forEach(eventStream -> {
                     StreamDispatchTask dispatchTask = new StreamDispatchTask(eventStream, asyncStreamDispatcher, this);
@@ -44,6 +55,7 @@ public class StartReplay implements ManagedTaskListener {
         allTasksCreated = true;
         if (outstandingTasks.isEmpty()) shutdown();
         logger.info("-------------- Invocation of Event Streams Replay Completed --------------");
+
     }
 
     @Override
@@ -76,6 +88,23 @@ public class StartReplay implements ManagedTaskListener {
     }
 
     private void shutdown() {
-        logger.info("========== ALL TASKS HAVE BEEN DISPATCHED -- SHUTDOWN =================");
+        logger.info("========== ALL TASKS HAVE BEEN DISPATCHED -- ATTEMPTING SHUTDOWN =================");
+        final String processFile = System.getProperty(MAIN_PROCESS_FILE);
+        try {
+            if (processFile != null) {
+                boolean deleted = Files.deleteIfExists(new File(processFile).toPath());
+                if (!deleted)
+                    logger.warn("Failed to delete process file '{0}', file does not exist", processFile);
+            }
+        } catch (IOException e) {
+            logger.warn("Failed to delete process file '{0}', file does not exist", processFile);
+        }
+        logger.info("========== SUCCESSFULLY INITIATED SWARM SHUTDOWN =================");
+    }
+
+    private void checkForMainProcessFile() {
+        if (System.getProperty(MAIN_PROCESS_FILE) == null) {
+            logger.warn(NO_PROCESS_FILE_WARNING);
+        }
     }
 }

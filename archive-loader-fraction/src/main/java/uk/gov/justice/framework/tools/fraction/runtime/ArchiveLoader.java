@@ -8,6 +8,7 @@ import org.wildfly.swarm.spi.runtime.annotations.DeploymentScoped;
 import org.wildfly.swarm.undertow.WARArchive;
 
 import javax.inject.Inject;
+
 import java.nio.file.Paths;
 
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
