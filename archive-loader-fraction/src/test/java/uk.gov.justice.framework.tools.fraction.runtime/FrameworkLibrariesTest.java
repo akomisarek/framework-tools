@@ -16,7 +16,7 @@ public class FrameworkLibrariesTest {
     public void shouldReturnShrinkwrapArchives() throws Exception {
         FrameworkLibraries frameworkLibraries = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc:",
-                "uk.gov.justice.services:framework-api-core");
+                "uk.gov.justice.framework-api:framework-api-core");
 
         Archive[] archives = frameworkLibraries.shrinkWrapArchives();
 
@@ -28,7 +28,7 @@ public class FrameworkLibrariesTest {
     public void shouldReturnExclusionFilter() {
         Filter<ArchivePath> filter = new FrameworkLibraries(
                 "uk.gov.justice.services:event-repository-jdbc",
-                "uk.gov.justice.services:framework-api-core")
+                "uk.gov.justice.framework-api:framework-api-core")
                 .exclusionFilter();
 
         assertThat(filter.include(new BasicPath("/WEB-INF/lib/event-repository-jdbc")), is(false));

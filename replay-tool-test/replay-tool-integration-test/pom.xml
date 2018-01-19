@@ -21,7 +21,7 @@
         <dependency>
             <groupId>uk.gov.justice.utils</groupId>
             <artifactId>test-utils-core</artifactId>
-            <version>${test.utils.core.version}</version>
+            <version>${test.utils.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -41,9 +41,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
-            <artifactId>framework-api-messaging</artifactId>
-            <version>${framework.version}</version>
+            <groupId>uk.gov.justice.framework-api</groupId>
+            <artifactId>framework-api-core</artifactId>
+            <version>${framework-api.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -75,7 +75,7 @@
             <artifactId>test-utils-logging-simple</artifactId>
             <type>pom</type>
             <scope>test</scope>
-            <version>${uk.gov.justice.utils.version}</version>
+            <version>${test.utils.version}</version>
         </dependency>
     </dependencies>
 

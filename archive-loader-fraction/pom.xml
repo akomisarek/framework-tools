@@ -55,9 +55,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>uk.gov.justice.services</groupId>
+            <groupId>uk.gov.justice.framework-api</groupId>
             <artifactId>framework-api-core</artifactId>
-            <version>${framework.version}</version>
+            <version>${framework-api.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
