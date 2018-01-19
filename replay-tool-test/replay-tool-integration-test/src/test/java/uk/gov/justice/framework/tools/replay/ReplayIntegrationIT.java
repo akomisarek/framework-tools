@@ -27,20 +27,20 @@ public class ReplayIntegrationIT {
     private static final String PROCESS_FILE_LOCATION = TEST_PROPERTIES.value("process.file.location");
     private static final String EXECUTION_TIMEOUT = TEST_PROPERTIES.value("replay.execution.timeout");
 
-    private static TestEventLogRepository EVENT_LOG_REPOSITORY;
+    private static TestEventRepository EVENT_LOG_REPOSITORY;
 
     private static DataSource viewStoreDataSource;
 
     @Before
     public void setUpDB() throws Exception {
-        EVENT_LOG_REPOSITORY = new TestEventLogRepository();
+        EVENT_LOG_REPOSITORY = new TestEventRepository();
         viewStoreDataSource = initViewStoreDb();
         createProcessFile();
     }
 
     @Test
     public void runReplayTool() throws Exception {
-        List<String> insertedEvents = EVENT_LOG_REPOSITORY.insertEventLogData(randomUUID());
+        final List<String> insertedEvents = EVENT_LOG_REPOSITORY.insertEventData(randomUUID());
         runCommand(createCommandToExecuteReplay());
         viewStoreEvents(viewStoreDataSource).forEach(viewStoreEvent -> {
             System.out.println(format("viewStoreEvent with id %s", viewStoreEvent));
