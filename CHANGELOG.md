@@ -5,6 +5,8 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ## [Unreleased]
 
+## [3.0.0] - 2018-01-22
+
 ### Changed
 - Update to use framework version 3.0.0
 
