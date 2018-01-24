@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
@@ -28,25 +29,32 @@ public class ReplayIntegrationIT {
     private static final String EXECUTION_TIMEOUT = TEST_PROPERTIES.value("replay.execution.timeout");
 
     private static TestEventRepository EVENT_LOG_REPOSITORY;
+    private static TestEventStreamJdbcRepository EVENT_STREAM_JDBC_REPOSITORY;
 
     private static DataSource viewStoreDataSource;
 
     @Before
     public void setUpDB() throws Exception {
         EVENT_LOG_REPOSITORY = new TestEventRepository();
+        EVENT_STREAM_JDBC_REPOSITORY = new TestEventStreamJdbcRepository(EVENT_LOG_REPOSITORY.getDataSource());
         viewStoreDataSource = initViewStoreDb();
         createProcessFile();
     }
 
     @Test
     public void runReplayTool() throws Exception {
-        final List<String> insertedEvents = EVENT_LOG_REPOSITORY.insertEventData(randomUUID());
+        final List<String> insertedEvents = insertEventData(randomUUID());
         runCommand(createCommandToExecuteReplay());
         viewStoreEvents(viewStoreDataSource).forEach(viewStoreEvent -> {
             System.out.println(format("viewStoreEvent with id %s", viewStoreEvent));
             insertedEvents.remove(viewStoreEvent);
         });
         assertTrue(insertedEvents.isEmpty());
+    }
+
+    private List<String> insertEventData(final UUID streamId) {
+        EVENT_STREAM_JDBC_REPOSITORY.insert(streamId);
+        return EVENT_LOG_REPOSITORY.insertEventData(streamId);
     }
 
     @After
