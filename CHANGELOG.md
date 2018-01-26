@@ -5,6 +5,19 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ## [Unreleased]
 
+## [3.1.0] - 2018-01-26
+
+### Added
+- Replay tool manual
+
+### Fixed
+- Fix archive loader dependency exclusion to include additional libraries
+
+### Changed
+- Update to framework version 3.1.0
+- Update to framework api version 1.1.0
+- Update to common-bom version 1.22.0
+
 ## [3.0.0] - 2018-01-22
 
 ### Changed
