@@ -1,5 +1,29 @@
 package uk.gov.justice.framework.tools.replay;
 
+import static java.util.UUID.randomUUID;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
+import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
+import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithDefaults;
+import static uk.gov.justice.services.test.utils.core.messaging.MetadataBuilderFactory.metadataWithRandomUUID;
+
+import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
+import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
+import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
+import uk.gov.justice.services.messaging.JsonEnvelope;
+import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
+import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,27 +31,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
-import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
-import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
-import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static java.util.UUID.randomUUID;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.*;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithDefaults;
-import static uk.gov.justice.services.messaging.JsonObjectMetadata.metadataWithRandomUUID;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher.jsonEnvelope;
-import static uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMetadataMatcher.metadata;
-import static uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder.envelope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncStreamDispatcherTest {
@@ -64,8 +67,12 @@ public class AsyncStreamDispatcherTest {
     public void shouldUpdateStreamBufferStatus() {
 
         final UUID streamId = randomUUID();
-        final JsonEnvelope envelope1 = envelope().with(metadataWithDefaults().withStreamId(streamId).withVersion(4L)).build();
-        final JsonEnvelope envelope2 = envelope().with(metadataWithDefaults().withStreamId(streamId).withVersion(5L)).build();
+        final JsonEnvelope envelope1 = JsonEnvelopeBuilder.envelope().with(
+                metadataWithDefaults().withStreamId(streamId).withVersion(4L))
+                .build();
+        final JsonEnvelope envelope2 = JsonEnvelopeBuilder.envelope().with(
+                metadataWithDefaults().withStreamId(streamId).withVersion(5L))
+                .build();
 
         asyncStreamDispatcher.dispatch(Stream.of(envelope1, envelope2));
 
@@ -97,12 +104,12 @@ public class AsyncStreamDispatcherTest {
 
 
         final JsonEnvelope envelope1 = envelope().with(metadataWithRandomUUID("event-with-handler")
-                                                 .withStreamId(streamId)
-                                                 .withVersion(1L))
-                                                 .build();
+                .withStreamId(streamId)
+                .withVersion(1L))
+                .build();
         final JsonEnvelope envelope2 = envelope().with(metadataWithRandomUUID("event-without-handler")
-                                                 .withStreamId(streamId)
-                                                 .withVersion(2L)).build();
+                .withStreamId(streamId)
+                .withVersion(2L)).build();
         final JsonEnvelope envelope3 = envelope().with(metadataWithRandomUUID("event-with-handler").withStreamId(streamId).withVersion(3L)).build();
 
         asyncStreamDispatcher.dispatch(Stream.of(envelope1, envelope2, envelope3));

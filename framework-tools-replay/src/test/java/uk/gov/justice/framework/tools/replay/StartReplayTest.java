@@ -56,7 +56,7 @@ public class StartReplayTest {
         final Stream<Stream<JsonEnvelope>> streamOfStreams = Stream.of(mockStream, mockStream);
         createMainProcessFile();
 
-        when(jdbcEventRepository.getStreamOfAllEventStreams()).thenReturn(streamOfStreams);
+        when(jdbcEventRepository.getStreamOfAllActiveEventStreams()).thenReturn(streamOfStreams);
         when(executorService.submit(any(StreamDispatchTask.class))).thenReturn(dispatchTaskFuture);
         when(outstandingTasks.isEmpty()).thenReturn(true);
 
@@ -70,7 +70,7 @@ public class StartReplayTest {
     public void shouldDispatchStreamsAndShutdownByForce() {
         final Stream<Stream<JsonEnvelope>> streamOfStreams = Stream.of(mockStream, mockStream);
 
-        when(jdbcEventRepository.getStreamOfAllEventStreams()).thenReturn(streamOfStreams);
+        when(jdbcEventRepository.getStreamOfAllActiveEventStreams()).thenReturn(streamOfStreams);
         when(executorService.submit(any(StreamDispatchTask.class))).thenReturn(dispatchTaskFuture);
         when(outstandingTasks.isEmpty()).thenReturn(true);
 
