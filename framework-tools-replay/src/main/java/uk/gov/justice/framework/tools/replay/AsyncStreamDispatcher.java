@@ -1,23 +1,30 @@
 package uk.gov.justice.framework.tools.replay;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
+
 import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
 import uk.gov.justice.services.messaging.JsonEnvelope;
 import uk.gov.justice.services.messaging.Metadata;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Stateless
 public class AsyncStreamDispatcher {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamDispatcher.class);
+
     @Inject
     private TransactionalEnvelopeDispatcher envelopeDispatcher;
+
     @Inject
     private StreamStatusJdbcRepository streamStatusRepository;
 
@@ -32,7 +39,7 @@ public class AsyncStreamDispatcher {
                 }
                 try {
                     envelopeDispatcher.dispatch(envelope);
-                } catch(MissingHandlerException ex) {
+                } catch (MissingHandlerException ex) {
                     final Metadata metadata = envelope.metadata();
                     LOGGER.warn("Missing handler for stream Id: {}, event name: {}, version: {}", metadata.streamId().get(),
                             metadata.name(), metadata.version().get());
@@ -44,20 +51,28 @@ public class AsyncStreamDispatcher {
                 envelopes[0] = envelope;
             });
             final UUID streamId = streamIdOf(envelopes[0]);
-            streamStatusRepository.insert(new StreamStatus(streamId, versionOf(envelopes[0])));
+            streamStatusRepository.insert(new StreamStatus(streamId, versionOf(envelopes[0]), sourceOf(envelopes[0])));
             LOGGER.info("Finished processing of stream: {}, elements processed: {}", streamId, noOfProcessedElements[0]);
             return streamId;
         }
     }
 
     private UUID streamIdOf(final JsonEnvelope envelope) {
-        return envelope.metadata().streamId()
+        return envelope
+                .metadata()
+                .streamId()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Stream id not found in the envelope: %s", envelope.toString())));
     }
 
     private Long versionOf(final JsonEnvelope envelope) {
-        return envelope.metadata().version()
+        return envelope
+                .metadata()
+                .version()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Version not found in the envelope: %s", envelope.toString())));
+    }
+
+    private String sourceOf(final JsonEnvelope envelope) {
+        return substringBefore(envelope.metadata().name(), ".");
     }
 
     private boolean shouldLogProgress(final int[] i) {

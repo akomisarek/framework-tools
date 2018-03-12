@@ -18,7 +18,6 @@ import uk.gov.justice.services.core.handler.exception.MissingHandlerException;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatus;
 import uk.gov.justice.services.event.buffer.core.repository.streamstatus.StreamStatusJdbcRepository;
 import uk.gov.justice.services.messaging.JsonEnvelope;
-import uk.gov.justice.services.test.utils.core.matchers.JsonEnvelopeMatcher;
 import uk.gov.justice.services.test.utils.core.messaging.JsonEnvelopeBuilder;
 
 import java.util.List;
@@ -37,6 +36,7 @@ public class AsyncStreamDispatcherTest {
 
     @Mock
     private TransactionalEnvelopeDispatcher envelopeDispatcher;
+
     @Mock
     private StreamStatusJdbcRepository streamStatusRepository;
 
@@ -47,8 +47,16 @@ public class AsyncStreamDispatcherTest {
     public void shouldDispatchEnvelopes() {
 
         final UUID streamId = randomUUID();
-        final JsonEnvelope envelope1 = envelope().with(metadataWithDefaults().withStreamId(streamId).withVersion(1L)).build();
-        final JsonEnvelope envelope2 = envelope().with(metadataWithDefaults().withStreamId(streamId).withVersion(2L)).build();
+        final JsonEnvelope envelope1 = envelope().with(
+                metadataWithRandomUUID("source.event-occurred")
+                        .withStreamId(streamId)
+                        .withVersion(1L))
+                .build();
+        final JsonEnvelope envelope2 = envelope().with(
+                metadataWithRandomUUID("source.another-event-occurred")
+                        .withStreamId(streamId)
+                        .withVersion(2L))
+                .build();
 
         doNothing().when(envelopeDispatcher).dispatch(envelope1);
         doNothing().when(envelopeDispatcher).dispatch(envelope2);
@@ -68,26 +76,42 @@ public class AsyncStreamDispatcherTest {
 
         final UUID streamId = randomUUID();
         final JsonEnvelope envelope1 = JsonEnvelopeBuilder.envelope().with(
-                metadataWithDefaults().withStreamId(streamId).withVersion(4L))
+                metadataWithRandomUUID("source.event-occurred")
+                        .withStreamId(streamId)
+                        .withVersion(4L))
                 .build();
         final JsonEnvelope envelope2 = JsonEnvelopeBuilder.envelope().with(
-                metadataWithDefaults().withStreamId(streamId).withVersion(5L))
+                metadataWithRandomUUID("source.another-event-occurred")
+                        .withStreamId(streamId)
+                        .withVersion(5L))
                 .build();
 
         asyncStreamDispatcher.dispatch(Stream.of(envelope1, envelope2));
 
-        verify(streamStatusRepository).insert(new StreamStatus(streamId, 5L));
+        verify(streamStatusRepository).insert(new StreamStatus(streamId, 5L, "source"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfNoStreamIdInTheEnvelope() {
-        final Stream<JsonEnvelope> stream = Stream.of(envelope().with(metadataWithRandomUUID("dummyName").withVersion(1L)).build());
+
+        final Stream<JsonEnvelope> stream = Stream.of(
+                envelope()
+                        .with(metadataWithRandomUUID("dummyName")
+                                .withVersion(1L))
+                        .build());
+
         asyncStreamDispatcher.dispatch(stream);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfNoVersionInTheEnvelope() {
-        final Stream<JsonEnvelope> stream = Stream.of(envelope().with(metadataWithDefaults().withStreamId(randomUUID())).build());
+
+        final Stream<JsonEnvelope> stream = Stream.of(
+                envelope()
+                        .with(metadataWithDefaults()
+                                .withStreamId(randomUUID()))
+                        .build());
+
         asyncStreamDispatcher.dispatch(stream);
     }
 
@@ -96,30 +120,31 @@ public class AsyncStreamDispatcherTest {
 
         final UUID streamId = randomUUID();
 
-        final JsonEnvelopeMatcher envelopeMatcherForEventWithoutHandler = jsonEnvelope()
-                .withMetadataOf(metadata().withName("event-without-handler"));
-
         doThrow(new MissingHandlerException("Handler for event-without-handler not found"))
-                .when(envelopeDispatcher).dispatch(argThat(envelopeMatcherForEventWithoutHandler));
+                .when(envelopeDispatcher).dispatch(
+                argThat(jsonEnvelope()
+                        .withMetadataOf(metadata().withName("source.event-without-handler"))));
 
-
-        final JsonEnvelope envelope1 = envelope().with(metadataWithRandomUUID("event-with-handler")
-                .withStreamId(streamId)
-                .withVersion(1L))
+        final JsonEnvelope envelope1 = envelope()
+                .with(metadataWithRandomUUID("source.event-with-handler")
+                        .withStreamId(streamId)
+                        .withVersion(1L))
                 .build();
-        final JsonEnvelope envelope2 = envelope().with(metadataWithRandomUUID("event-without-handler")
-                .withStreamId(streamId)
-                .withVersion(2L)).build();
-        final JsonEnvelope envelope3 = envelope().with(metadataWithRandomUUID("event-with-handler").withStreamId(streamId).withVersion(3L)).build();
+        final JsonEnvelope envelope2 = envelope()
+                .with(metadataWithRandomUUID("source.event-without-handler")
+                        .withStreamId(streamId)
+                        .withVersion(2L)).build();
+        final JsonEnvelope envelope3 = envelope()
+                .with(metadataWithRandomUUID("source.event-with-handler")
+                        .withStreamId(streamId)
+                        .withVersion(3L))
+                .build();
 
         asyncStreamDispatcher.dispatch(Stream.of(envelope1, envelope2, envelope3));
 
-        ArgumentCaptor<JsonEnvelope> dispatchCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
+        final ArgumentCaptor<JsonEnvelope> dispatchCaptor = ArgumentCaptor.forClass(JsonEnvelope.class);
 
         verify(envelopeDispatcher, times(3)).dispatch(dispatchCaptor.capture());
-        verify(streamStatusRepository).insert(new StreamStatus(streamId, 3L));
-
+        verify(streamStatusRepository).insert(new StreamStatus(streamId, 3L, "source"));
     }
-
-
 }

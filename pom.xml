@@ -17,8 +17,8 @@
     <properties>
         <cpp.repo.name>framework-tools</cpp.repo.name>
         <common-bom.version>1.22.0</common-bom.version>
-        <framework-api.version>1.1.0</framework-api.version>
-        <framework.version>3.1.0</framework.version>
+        <framework-api.version>2.0.1</framework-api.version>
+        <framework.version>4.0.0</framework.version>
         <wildfly.swarm.version>2017.11.0</wildfly.swarm.version>
         <test.utils.version>1.16.0</test.utils.version>
         <schema-service.version>1.1.0</schema-service.version>
