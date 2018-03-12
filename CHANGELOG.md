@@ -5,6 +5,13 @@ on [Keep a CHANGELOG](http://keepachangelog.com/). This project adheres to
 
 ## [Unreleased]
 
+## [4.0.0] - 2018-03-12
+
+### Changed
+- Update to framework version 4.0.0
+- Update to framework api version 2.0.1
+- Updated AsyncStreamDispatcher to support stream status source.
+
 ## [3.1.0] - 2018-01-26
 
 ### Added
